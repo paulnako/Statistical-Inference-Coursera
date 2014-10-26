@@ -1,0 +1,88 @@
+---
+title: "Statistical Inference Part 2:Toothgrowth Data"
+author: "Paul Nakonechny"
+date: "October 24, 2014"
+output: pdf_document
+---
+This file constitutes the second part of the Statistical Inference Coures Project
+
+####1. Load the ToothGrowth data and perform some basic exploratory data analyses 
+```{r}
+#Load ToothGrowth data and any relevant packages
+data <- ToothGrowth
+attach(data)
+library(lattice)
+library (latticeExtra)
+```
+
+```{r}
+#Exploratory analysis
+#Boxplots
+
+bwplot(dose ~ len, xlab = "Tooth Length", ylab = "Dose", 
+       main = "Boxplot")
+
+bwplot(dose ~ len | supp, xlab = "Tooth Length", ylab = "Dose", 
+       main = "Tooth length by dose for a given supplement")
+
+#Histogram with density overlay
+histogram(len, type = "density", xlab = "Tooth length") + densityplot(len)
+
+qqnorm(len)
+qqline(len, probs=c(0.25,0.75))
+
+#We will assume a normal distribution for the purposes of this analysis.
+```
+
+####2. Provide a basic summary of the data.
+
+```{r}
+#Data summary
+#Quantiles
+summary(data)
+
+#Variance
+datavarsupp <- c(var(len[supp == "OJ"]), var(len[supp == "VC"]))
+
+datavardose <- c(var(len[dose == 0.5]), var(len[dose == 1.0]), var(len[dose == 2.0]))
+datavarsupp
+datavardose
+```
+For the analysis comparing differences by supplement, we will not assume equal variances.
+
+For the analysis comparing differences between 0.5 doses and 1.0 doses, we will assume equal variances.
+
+####3. Use confidence intervals and hypothesis tests to compare tooth growth by supp and dose.
+
+```{r}
+#Hypothesis tests
+#T-test comparing tooth lenth and supplement
+tsupp <- t.test(len~supp, paired = FALSE, var.equal = FALSE, data = ToothGrowth)
+tsupp
+
+#T-test comparing tooth length under 0.5 and 1.0 doses
+tdose.0.5.1 <- t.test(len[dose == 0.5], len[dose == 1.0], paired = FALSE,                                              var.equal = TRUE)
+tdose.0.5.1
+
+#T-test comparing tooth length under 0.5 and 2.0 doses
+tdose.0.5.2 <- t.test(len[dose == 0.5], len[dose == 2.0], paired = FALSE, 
+                      var.equal = FALSE)
+tdose.0.5.2 
+
+#T-test comparing tooth length under 1.0 and 2.0 doses
+tdose.1.2 <- t.test(len[dose == 1.0], len[dose == 2.0], paired = FALSE, 
+                      var.equal = FALSE)
+tdose.1.2
+```
+
+####4. State your conclusions and the assumptions needed for your conclusions. 
+In conclusion, we fail to reject the null hypothesis when comparing tooth length by the type of supplement.
+
+We reject the null hypothesis when comparing tooth length by dosage levels in all cases.
+
+#####Assumptions:
+The sample is normally distributed.
+
+For the analysis comparing differences by supplement, I did not assume equal variances.
+
+For the analysis comparing differences between 0.5 doses and 1.0 doses, I assumed equal variances.

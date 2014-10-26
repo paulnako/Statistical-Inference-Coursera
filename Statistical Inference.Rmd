@@ -1,0 +1,83 @@
+---
+title: 'Statistical Inference Project Part 1: Simulation Exercise'
+author: "Paul Nakonechny"
+date: "October 18, 2014"
+output: pdf_document
+---
+This document serves as the first part of the Statistical Inference course project.  
+```{r}
+set.seed(2)
+##Define variables
+n <- 40
+lambda <- 0.2
+nsim <- 1000
+
+###Run Simulation
+simmeans <- rowMeans(matrix(rexp(n*nsim, lambda), nsim, n))
+```
+
+####1. Show where the distribution is centered at and compare it to the theoretical center of the distribution.
+The simulated distribution is centred at:
+
+```{r}
+median(simmeans)
+```
+
+The theoretical center of the distribution is at 1/lambda:
+```{r}
+1/lambda
+```
+
+In the plot below, the theoretical center is illustrated with a vertical red line.
+
+####2. Show how variable it is and compare it to the theoretical variance of the distribution.
+
+
+The actual variance of the simulated distribution is:
+```{r}
+var(simmeans)
+```
+
+The theoretical variance of the simulated distribution is:
+```{r}
+1/(lambda^2 * n)
+```
+
+####3. Show that the distribution is approximately normal.
+
+
+The simulated distribution is plotted below.  A density curve is overlayed to demonstrate that the distribution is approximately normal.
+```{r}
+hist(simmeans, breaks = 50, col = "green", prob = TRUE)
+abline(v = 1/lambda, lwd = 2, col = "red")
+lines(density(simmeans))
+```
+
+Q-Q plot to further demonstrate approximate normality:
+```{r}
+qqnorm(simmeans)
+qqline(simmeans, probs=c(0.25,0.75))
+```
+
+####4. Evaluate the coverage of the confidence interval for 1/lambda: X¯±1.96Sn.
+
+Confidence interval plot for lambda:
+```{r}
+lvals <- seq(0.1, .9, by = 0.05)
+coverage <- sapply(lvals, function(p) {
+  phats <- rbinom(nsim, prob = p, size = n)/n
+  ll <- phats - qnorm(0.975) * sqrt(phats * (1 - phats)/n)
+  ul <- phats + qnorm(0.975) * sqrt(phats * (1 - phats)/n)
+  mean(ll < p & ul > p)
+})
+
+plot(lvals, coverage, type = "l", xlab = "Lambda Values", 
+     main = "Evaluating the 95% confidence intervals for Lambda")
+abline(h = 0.95)
+```
+
+Confidence interval for lambda = 0.2
+```{r}
+mean(simmeans) + c(-1,1)*1.96*sd(simmeans)/sqrt(length(simmeans))
+
+```
